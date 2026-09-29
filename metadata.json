@@ -1,0 +1,6 @@
+{
+  "name": "AmbuAlert Corridor",
+  "description": "AI-Powered Emergency Traffic Management & Simulation Platform for municipal transit authorities and connected motorists.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
