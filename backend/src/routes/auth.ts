@@ -10,7 +10,7 @@ import { Router, Request, Response } from 'express';
 import bcrypt from 'bcrypt';
 import { signToken, authenticateToken } from '../middleware/auth.js';
 import { appendAuditLog } from '../db/store.js';
-import { query } from '../db/pg.js';
+import { User } from '../models/User.js';
 
 export const authRouter = Router();
 
@@ -24,8 +24,7 @@ authRouter.post('/login', async (req: Request, res: Response) => {
   }
 
   try {
-    const result = await query('SELECT * FROM users WHERE email = $1', [email.toLowerCase()]);
-    const user = result.rows[0];
+    const user = await User.findOne({ email: email.toLowerCase() });
 
     if (!user) {
       res.status(401).json({ error: 'Invalid email or password.' });
@@ -45,7 +44,8 @@ authRouter.post('/login', async (req: Request, res: Response) => {
     }
 
     // Update last active
-    await query('UPDATE users SET last_active = NOW() WHERE id = $1', [user.id]);
+    user.last_active = new Date();
+    await user.save();
 
     // Sign JWT
     const token = signToken({
@@ -85,6 +85,76 @@ authRouter.post('/login', async (req: Request, res: Response) => {
   }
 });
 
+// ─── POST /api/auth/register ──────────────────────────────────────────────────
+authRouter.post('/register', async (req: Request, res: Response) => {
+  const { email, password, name, role, department } = req.body;
+
+  if (!email || !password || !name) {
+    res.status(400).json({ error: 'Name, email, and password are required.' });
+    return;
+  }
+
+  try {
+    // Check if user already exists
+    const existing = await User.findOne({ email: email.toLowerCase() });
+    if (existing) {
+      res.status(409).json({ error: 'Email is already in use.' });
+      return;
+    }
+
+    // Hash password
+    const passwordHash = await bcrypt.hash(password, 10);
+    const defaultRole = role || 'System Admin';
+    const defaultDept = department || 'General';
+
+    // Insert user
+    const user = await User.create({
+      name,
+      email: email.toLowerCase(),
+      password_hash: passwordHash,
+      role: defaultRole,
+      department: defaultDept,
+      status: 'Active',
+      last_active: new Date()
+    });
+
+    // Sign JWT
+    const token = signToken({
+      userId: user.id,
+      email: user.email,
+      role: user.role,
+      name: user.name,
+      organizationId: user.organization_id,
+    });
+
+    appendAuditLog({
+      organizationId: user.organization_id,
+      actor: `${user.name} (${user.role})`,
+      action: 'USER_REGISTERED',
+      resource: 'Auth',
+      timestamp: new Date().toLocaleString(),
+      status: 'SUCCESS',
+      details: `New user registered from ${req.ip}`,
+    });
+
+    res.status(201).json({
+      token,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        department: user.department,
+        organizationId: user.organization_id,
+      },
+      expiresIn: process.env.JWT_EXPIRES_IN || '8h',
+    });
+  } catch (err) {
+    console.error('[DB Error]', err);
+    res.status(500).json({ error: 'Registration failed due to a server error.' });
+  }
+});
+
 // ─── POST /api/auth/logout ────────────────────────────────────────────────────
 // JWT is stateless — client must discard the token.
 // This endpoint exists for audit logging and future token blocklist support.
@@ -106,8 +176,7 @@ authRouter.post('/logout', authenticateToken, (req: Request, res: Response) => {
 // ─── GET /api/auth/me ─────────────────────────────────────────────────────────
 authRouter.get('/me', authenticateToken, async (req: Request, res: Response) => {
   try {
-    const result = await query('SELECT * FROM users WHERE id = $1', [req.user!.userId]);
-    const user = result.rows[0];
+    const user = await User.findById(req.user!.userId);
     if (!user) {
       res.status(404).json({ error: 'User not found.' });
       return;

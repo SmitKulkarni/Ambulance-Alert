@@ -86,6 +86,12 @@ export const authApi = {
       body: JSON.stringify({ email, password }),
     }, false),
 
+  register: (name: string, email: string, password: string) =>
+    apiFetch<LoginResponse>('/api/auth/register', {
+      method: 'POST',
+      body: JSON.stringify({ name, email, password }),
+    }, false),
+
   logout: () =>
     apiFetch<{ message: string }>('/api/auth/logout', { method: 'POST' }),
 

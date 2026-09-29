@@ -10,8 +10,10 @@ import { useAuth } from '../../context/AuthContext';
 import { Logo } from '../common/Logo';
 
 export const LoginView: React.FC = () => {
-  const { login, loginError, isLoading, clearLoginError } = useAuth();
+  const { login, register, loginError, isLoading, clearLoginError } = useAuth();
 
+  const [isRegister, setIsRegister] = useState(false);
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -22,7 +24,11 @@ export const LoginView: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     clearLoginError();
-    await login(email.trim(), password);
+    if (isRegister) {
+      await register(name.trim(), email.trim(), password);
+    } else {
+      await login(email.trim(), password);
+    }
   };
 
   return (
@@ -55,8 +61,12 @@ export const LoginView: React.FC = () => {
           {/* Form */}
           <form onSubmit={handleSubmit} className="px-8 py-7 flex flex-col gap-5">
             <div>
-              <h1 className="text-xl font-bold text-[#0b1c30] mb-1">Sign in to your account</h1>
-              <p className="text-xs text-slate-500">Enter your credentials to access the control centre.</p>
+              <h1 className="text-xl font-bold text-[#0b1c30] mb-1">
+                {isRegister ? 'Create an account' : 'Sign in to your account'}
+              </h1>
+              <p className="text-xs text-slate-500">
+                {isRegister ? 'Enter your details to register.' : 'Enter your credentials to access the control centre.'}
+              </p>
             </div>
 
             {/* Error banner */}
@@ -67,6 +77,25 @@ export const LoginView: React.FC = () => {
               >
                 <span className="material-symbols-outlined text-[18px] mt-0.5 flex-shrink-0">error</span>
                 <span>{loginError}</span>
+              </div>
+            )}
+
+            {/* Name field (for register) */}
+            {isRegister && (
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="name-input" className="text-xs font-semibold text-slate-600 uppercase tracking-wide">
+                  Full Name
+                </label>
+                <input
+                  id="name-input"
+                  type="text"
+                  autoComplete="name"
+                  required
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Jane Doe"
+                  className="w-full px-4 py-2.5 rounded-xl border border-[#dce9ff] bg-white text-sm text-[#0b1c30] placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-400 transition"
+                />
               </div>
             )}
 
@@ -120,48 +149,36 @@ export const LoginView: React.FC = () => {
             <button
               id="login-submit-btn"
               type="submit"
-              disabled={isLoading || !email || !password}
+              disabled={isLoading || !email || !password || (isRegister && !name)}
               className="w-full py-3 rounded-xl bg-[#0b1c30] text-white text-sm font-semibold flex items-center justify-center gap-2 hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-[0.98]"
             >
               {isLoading ? (
                 <>
                   <span className="material-symbols-outlined text-[18px] animate-spin">progress_activity</span>
-                  Authenticating…
+                  {isRegister ? 'Registering…' : 'Authenticating…'}
                 </>
               ) : (
                 <>
-                  <span className="material-symbols-outlined text-[18px]">login</span>
-                  Sign In
+                  <span className="material-symbols-outlined text-[18px]">
+                    {isRegister ? 'person_add' : 'login'}
+                  </span>
+                  {isRegister ? 'Create Account' : 'Sign In'}
                 </>
               )}
             </button>
 
-            {/* Demo credentials hint */}
-            <div className="bg-[#eff4ff] border border-[#dce9ff] rounded-xl px-4 py-3">
-              <p className="text-xs font-semibold text-slate-600 mb-2 flex items-center gap-1.5">
-                <span className="material-symbols-outlined text-[15px] text-blue-500">info</span>
-                Demo credentials (password: Password123!)
-              </p>
-              <div className="grid grid-cols-1 gap-1">
-                {[
-                  { role: 'System Admin', email: 'john.doe@ambualert.gov' },
-                  { role: 'Emergency Planner', email: 's.connor@cityems.org' },
-                  { role: 'Traffic Analyst', email: 'e.rostova@metro.gov' },
-                ].map(({ role, email: demoEmail }) => (
-                  <button
-                    key={demoEmail}
-                    type="button"
-                    onClick={() => {
-                      setEmail(demoEmail);
-                      setPassword('Password123!');
-                    }}
-                    className="text-left px-3 py-1.5 rounded-lg hover:bg-white/70 transition text-xs text-slate-600 flex items-center justify-between group"
-                  >
-                    <span className="font-medium text-[#0b1c30]">{role}</span>
-                    <span className="text-slate-400 group-hover:text-blue-500 transition">{demoEmail}</span>
-                  </button>
-                ))}
-              </div>
+            {/* Toggle Link */}
+            <div className="text-center mt-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsRegister(!isRegister);
+                  clearLoginError();
+                }}
+                className="text-sm font-medium text-blue-600 hover:text-blue-800 transition"
+              >
+                {isRegister ? 'Already have an account? Sign in' : "Don't have an account? Register"}
+              </button>
             </div>
           </form>
 

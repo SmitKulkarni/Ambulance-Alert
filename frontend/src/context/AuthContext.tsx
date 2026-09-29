@@ -32,6 +32,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   loginError: string | null;
   login: (email: string, password: string) => Promise<boolean>;
+  register: (name: string, email: string, password: string) => Promise<boolean>;
   logout: () => Promise<void>;
   clearLoginError: () => void;
 }
@@ -84,6 +85,26 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   }, []);
 
+  const register = useCallback(async (name: string, email: string, password: string): Promise<boolean> => {
+    setLoginError(null);
+    setIsLoading(true);
+
+    try {
+      const response = await authApi.register(name, email, password);
+      tokenStorage.set(response.token);
+      setUser(response.user as AuthUser);
+      return true;
+    } catch (err) {
+      const message = err instanceof ApiError
+        ? err.message
+        : 'Registration failed. Please try again.';
+      setLoginError(message);
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
   const logout = useCallback(async (): Promise<void> => {
     try {
       await authApi.logout();
@@ -105,6 +126,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         isAuthenticated: !!user,
         loginError,
         login,
+        register,
         logout,
         clearLoginError,
       }}

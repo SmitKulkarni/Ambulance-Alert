@@ -15,6 +15,7 @@ import { trafficRouter } from './routes/traffic.js';
 import { reportsRouter } from './routes/reports.js';
 import { cadRouter } from './routes/cad.js';
 import { authenticateToken } from './middleware/auth.js';
+import { connectMongo } from './db/mongo.js';
 
 dotenv.config();
 
@@ -99,8 +100,11 @@ export interface TelemetryFrame {
 
 // ─── Start server ──────────────────────────────────────────────────────────────
 const PORT = parseInt(process.env.SERVER_PORT || '4000', 10);
-httpServer.listen(PORT, () => {
-  console.log(`[Server] HTTP + WS listening on port ${PORT}`);
-  console.log(`[Server] Health: http://localhost:${PORT}/health`);
-  console.log(`[Server] WS Telemetry: ws://localhost:${PORT}/ws/telemetry`);
+
+connectMongo().then(() => {
+  httpServer.listen(PORT, () => {
+    console.log(`[Server] HTTP + WS listening on port ${PORT}`);
+    console.log(`[Server] Health: http://localhost:${PORT}/health`);
+    console.log(`[Server] WS Telemetry: ws://localhost:${PORT}/ws/telemetry`);
+  });
 });
