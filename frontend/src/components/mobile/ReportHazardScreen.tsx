@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useSimulation } from '../../context/SimulationContext';
+import { AiHazardSuggestion } from './AiHazardSuggestion';
 
 export const ReportHazardScreen: React.FC = () => {
   const { addHazardReport, showNotificationToast, setActiveMobileTab } = useSimulation();
@@ -249,6 +250,29 @@ export const ReportHazardScreen: React.FC = () => {
             className="w-full bg-[#eff4ff] p-3 rounded-2xl text-xs text-slate-900 border border-[#dce9ff] outline-none focus:border-slate-800"
           />
         </div>
+
+        {/* AI Hazard Categorization — Phase 2.2 */}
+        {notes.trim().length >= 5 && (
+          <AiHazardSuggestion
+            notes={notes}
+            coordinates="34.0522° N, -118.2437° W"
+            onConfirm={(aiCategory, aiSeverity) => {
+              // Auto-fill category from AI suggestion
+              const validCats = ['Accident', 'Road Obstruction', 'Flooding', 'Stalled EMS'];
+              if (validCats.includes(aiCategory)) {
+                setCategory(aiCategory as typeof category);
+              }
+              // Map severity string back to slider number
+              const sevMap: Record<string, number> = {
+                'Minor Delay': 1,
+                'Lane Restricted': 2,
+                'Critical Blocking': 3,
+              };
+              if (sevMap[aiSeverity]) setSeverityLevel(sevMap[aiSeverity]);
+              showNotificationToast(`AI set: ${aiCategory} — ${aiSeverity}`);
+            }}
+          />
+        )}
 
         {/* Prominent Submit Button */}
         <button

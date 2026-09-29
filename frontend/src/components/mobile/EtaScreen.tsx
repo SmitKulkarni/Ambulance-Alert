@@ -1,5 +1,6 @@
 import React from 'react';
 import { useSimulation } from '../../context/SimulationContext';
+import { AiEtaMobileCard } from './AiEtaMobileCard';
 
 export const EtaScreen: React.FC = () => {
   const {
@@ -187,6 +188,9 @@ export const EtaScreen: React.FC = () => {
           </span>
         </div>
       </div>
+
+      {/* AI ETA Refinement Card — Phase 2.4 (mobile) */}
+      <AiEtaMobileCard />
 
       {/* Manual Emergency Signal Override Button */}
       <button

@@ -1,5 +1,7 @@
 import React from 'react';
 import { SimulationProvider, useSimulation } from './context/SimulationContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import { LoginView } from './components/auth/LoginView';
 import { Header } from './components/common/Header';
 import { Sidebar } from './components/common/Sidebar';
 import { DashboardView } from './components/web/DashboardView';
@@ -163,10 +165,38 @@ const NavTabButton: React.FC<{ tab: string; label: string; icon: string }> = ({
   );
 };
 
-export default function App() {
+// ─── Auth Gate ────────────────────────────────────────────────────────────────
+// Shows a loading spinner while checking the stored token,
+// then routes to LoginView or the main app based on auth state.
+const AuthGate: React.FC = () => {
+  const { isAuthenticated, isLoading } = useAuth();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[#f8f9ff] flex items-center justify-center font-['Inter',sans-serif]">
+        <div className="flex flex-col items-center gap-3">
+          <span className="material-symbols-outlined text-[40px] text-red-600 animate-pulse">local_hospital</span>
+          <p className="text-sm text-slate-500 font-medium">Loading AmbuAlert…</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <LoginView />;
+  }
+
   return (
     <SimulationProvider>
       <MainLayout />
     </SimulationProvider>
+  );
+};
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <AuthGate />
+    </AuthProvider>
   );
 }

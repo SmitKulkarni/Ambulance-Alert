@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useSimulation } from '../../context/SimulationContext';
-import { UserRole } from '../../types';
+import { UserRole } from '@shared/types';
 
 export const UsersRolesView: React.FC = () => {
   const { usersList, showNotificationToast } = useSimulation();

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useSimulation } from '../../context/SimulationContext';
+import { AiDispatchPanel } from './AiDispatchPanel';
 
 export const DispatchConsoleView: React.FC = () => {
   const {
@@ -394,6 +395,13 @@ export const DispatchConsoleView: React.FC = () => {
               </div>
             </div>
           </div>
+
+          {/* AI Dispatch Recommendations — Phase 2.1 */}
+          <AiDispatchPanel
+            onAccept={(rec) =>
+              showNotificationToast(`AI Dispatch: ${rec.unit} → ${rec.route} (${rec.etaMinutes}m ETA)`)
+            }
+          />
 
           {/* Real-Time Incoming Distress Call Log with Audio Playback */}
           <div className="bg-white rounded-2xl p-5 border border-[#e5eeff] shadow-xs flex flex-col gap-4">

@@ -7,7 +7,7 @@ import {
   DistressCall,
   UserAccount,
   SystemAuditLog
-} from '../types';
+} from '@shared/types';
 import { soundManager } from '../utils/audio';
 
 interface SimulationContextType {

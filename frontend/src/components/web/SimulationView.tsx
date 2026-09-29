@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useSimulation } from '../../context/SimulationContext';
 import { CorridorGisMap } from '../common/CorridorGisMap';
+import { AiEtaRefinementPanel } from './AiEtaRefinementPanel';
 
 export const SimulationView: React.FC = () => {
   const {
@@ -304,6 +305,9 @@ export const SimulationView: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* AI Corridor ETA Refinement Panel — Phase 2.4 */}
+      <AiEtaRefinementPanel />
 
       {/* Historical Simulation Runs Table */}
       <div className="bg-white p-6 rounded-2xl border border-[#e5eeff] shadow-xs flex flex-col gap-4">

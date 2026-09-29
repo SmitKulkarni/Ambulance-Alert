@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useSimulation } from '../../context/SimulationContext';
-import { Scenario } from '../../types';
+import { Scenario } from '@shared/types';
+import { AiScenarioModal } from './AiScenarioModal';
 
 export const ScenariosView: React.FC = () => {
   const {
@@ -16,6 +17,7 @@ export const ScenariosView: React.FC = () => {
   } = useSimulation();
 
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showAiModal, setShowAiModal] = useState(false);
   const [newScen, setNewScen] = useState<Partial<Scenario>>({
     name: 'Westside Medical Express Corridor',
     routeProfile: 'West Downtown Arterial',
@@ -89,13 +91,23 @@ export const ScenariosView: React.FC = () => {
           </p>
         </div>
 
-        <button
-          onClick={() => setShowCreateModal(true)}
-          className="px-4 py-2.5 rounded-xl bg-slate-950 text-white text-xs font-bold hover:bg-slate-900 transition-all flex items-center gap-1.5 shadow-xs"
-        >
-          <span className="material-symbols-outlined text-[18px]">add_circle</span>
-          <span>Create New Scenario</span>
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            id="ai-generate-scenario-btn"
+            onClick={() => setShowAiModal(true)}
+            className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-violet-600 to-blue-600 text-white text-xs font-bold hover:opacity-90 transition-all flex items-center gap-1.5 shadow-sm"
+          >
+            <span className="material-symbols-outlined text-[18px]">auto_awesome</span>
+            <span>Generate with AI</span>
+          </button>
+          <button
+            onClick={() => setShowCreateModal(true)}
+            className="px-4 py-2.5 rounded-xl bg-slate-950 text-white text-xs font-bold hover:bg-slate-900 transition-all flex items-center gap-1.5 shadow-xs"
+          >
+            <span className="material-symbols-outlined text-[18px]">add_circle</span>
+            <span>Create New Scenario</span>
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
@@ -281,6 +293,17 @@ export const ScenariosView: React.FC = () => {
             </form>
           </div>
         </div>
+      )}
+
+      {/* AI Scenario Generator Modal — Phase 2.3 */}
+      {showAiModal && (
+        <AiScenarioModal
+          onSave={(scenario) => {
+            addScenario(scenario);
+            showNotificationToast(`AI-generated scenario "${scenario.name}" added to library.`);
+          }}
+          onClose={() => setShowAiModal(false)}
+        />
       )}
     </div>
   );
